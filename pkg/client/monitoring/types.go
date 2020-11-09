@@ -6,6 +6,7 @@ const (
 	MetricTypeVector = "vector"
 )
 
+
 type Metric struct {
 	MetricName string `json:"metric_name,omitempty" description:"metric name, eg. scheduler_up_sum"`
 	MetricData `json:"data,omitempty" description:"actual metric result"`

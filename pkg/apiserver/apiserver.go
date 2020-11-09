@@ -1,17 +1,16 @@
 package apiserver
 
-import(
+import (
 	"context"
-	"flag"
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/wenwenxiong/host-prometheus/pkg/client/monitoring"
 	"github.com/wenwenxiong/host-prometheus/pkg/client/monitoring/prometheus"
-	"github.com/wenwenxiong/host-prometheus/pkg/constant"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -24,10 +23,14 @@ type APIServer struct {
 	Server *http.Server
 }
 
-func NewApiServer() (*APIServer, error){
+func NewApiServer(listenPort string,endpoint string) (*APIServer, error){
+	port, err := strconv.Atoi(listenPort)
+	if err != nil {
+		return nil, fmt.Errorf("listenPort must be right int format, error: %v", err)
+	}
 	s := &APIServer{
-		ListenPort: constant.ListenPort,
-		Endpoint: constant.Endpoint,
+		ListenPort: port,
+		Endpoint: endpoint,
 	}
 	if (strings.TrimSpace(s.Endpoint)) == "" {
 		return nil, fmt.Errorf("moinitoring service address MUST not be empty, please check config endpoint")
@@ -40,7 +43,7 @@ func NewApiServer() (*APIServer, error){
 	}
 
 	router := mux.NewRouter()
-	RegisterRoutes(router)
+	RegisterRoutes(router, s.MonitoringClient)
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", s.ListenPort),
 		// Good practice to set timeouts to avoid Slowloris attacks.
@@ -56,9 +59,8 @@ func NewApiServer() (*APIServer, error){
 
 func (s *APIServer) Run() (err error) {
 
-	var wait time.Duration
-	flag.DurationVar(&wait, "graceful-timeout", time.Second * 15, "the duration for which the server gracefully wait for existing connections to finish - e.g. 15s or 1m")
-	flag.Parse()
+
+
 
 	c := make(chan os.Signal, 1)
 	// We'll accept graceful shutdowns when quit via SIGINT (Ctrl+C)
@@ -66,7 +68,7 @@ func (s *APIServer) Run() (err error) {
 	signal.Notify(c, os.Interrupt)
 
 	// Create a deadline to wait for.
-	ctx, cancel := context.WithTimeout(context.Background(), wait)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second * 15)
 	defer cancel()
 	go func() {
 		// Block until we receive our signal.

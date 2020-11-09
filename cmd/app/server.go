@@ -46,7 +46,7 @@ func NewPrometheusCommand() *cobra.Command {
 }
 
 func RunServer(listenPort string, endpoint string) error {
-	apiserver, err := apiserver.NewApiServer()
+	apiserver, err := apiserver.NewApiServer(listenPort, endpoint)
 	if err != nil {
 		return err
 	}
