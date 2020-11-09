@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/wenwenxiong/host-prometheus/pkg/client/monitoring"
+	"log"
 	"net/http"
 )
 
@@ -20,7 +21,10 @@ func (h handler) ShowVisitorInfo(writer http.ResponseWriter, request *http.Reque
 	vars := mux.Vars(request)
 	name := vars["name"]
 	country := vars["country"]
-	fmt.Fprintf(writer, "This guy named %s, was coming from %s .", name, country)
+	_, err := fmt.Fprintf(writer, "This guy named %s, was coming from %s .", name, country)
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 func (h handler) CpuHandler(writer http.ResponseWriter, request *http.Request){
@@ -66,7 +70,10 @@ func WriteAsJson(res monitoring.Metric, writer http.ResponseWriter){
 	}
 
 	writer.Header().Set("Content-Type", "application/json")
-	writer.Write(js)
+	_, err = writer.Write(js)
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 func (h handler) Load1Handler(writer http.ResponseWriter, request *http.Request){
