@@ -2,65 +2,30 @@ package apiserver
 
 import (
 	"context"
-	"fmt"
-	"github.com/gorilla/mux"
+	"github.com/wenwenxiong/host-prometheus/pkg/client/cache"
 	"github.com/wenwenxiong/host-prometheus/pkg/client/monitoring"
-	"github.com/wenwenxiong/host-prometheus/pkg/client/monitoring/prometheus"
+	"github.com/wenwenxiong/host-prometheus/pkg/client/mysql"
+	"github.com/wenwenxiong/host-prometheus/pkg/cron"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
-	"strconv"
-	"strings"
 	"time"
 )
 
 type APIServer struct {
 	ListenPort int
 	Endpoint string
+	Config *Config
 	// monitoring client set
 	MonitoringClient monitoring.Interface
+	RedisClient cache.Interface
+	MysqlClient *mysql.Client
 	Server *http.Server
-}
-
-func NewApiServer(listenPort string,endpoint string) (*APIServer, error){
-	port, err := strconv.Atoi(listenPort)
-	if err != nil {
-		return nil, fmt.Errorf("listenPort must be right int format, error: %v", err)
-	}
-	s := &APIServer{
-		ListenPort: port,
-		Endpoint: endpoint,
-	}
-	if (strings.TrimSpace(s.Endpoint)) == "" {
-		return nil, fmt.Errorf("moinitoring service address MUST not be empty, please check config endpoint")
-	} else {
-		monitoringClient, err := prometheus.NewPrometheus(s.Endpoint)
-		if err != nil {
-			return nil, fmt.Errorf("failed to connect to prometheus, please check prometheus status, error: %v", err)
-		}
-		s.MonitoringClient = monitoringClient
-	}
-
-	router := mux.NewRouter()
-	RegisterRoutes(router, s.MonitoringClient)
-	srv := &http.Server{
-		Addr:         fmt.Sprintf(":%d", s.ListenPort),
-		// Good practice to set timeouts to avoid Slowloris attacks.
-		WriteTimeout: time.Second * 15,
-		ReadTimeout:  time.Second * 15,
-		IdleTimeout:  time.Second * 60,
-		Handler: router, // Pass our instance of gorilla/mux in.
-	}
-    s.Server = srv
-
-	return s,nil
+	Cron *cron.Cron
 }
 
 func (s *APIServer) Run() (err error) {
-
-
-
 
 	c := make(chan os.Signal, 1)
 	// We'll accept graceful shutdowns when quit via SIGINT (Ctrl+C)
@@ -78,6 +43,13 @@ func (s *APIServer) Run() (err error) {
 		s.Server.Shutdown(ctx)
 	}()
 
+	// Schedule Task
+
+	log.Println("Start cron Scheduler Task on %s", time.Now().String())
+	if _,e := s.Cron.Cron().Every(1).Minute().Do(Task,s); e != nil{
+		log.Println(e)
+	}
+	s.Cron.Cron().StartAsync()
 	log.Println("Start listening on %s", s.Server.Addr)
 	if err := s.Server.ListenAndServe(); err != nil {
 		log.Println(err)

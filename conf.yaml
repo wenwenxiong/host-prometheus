@@ -1,0 +1,9 @@
+redis:
+  host: "192.168.50.71"
+  port: "6379"
+monitoring:
+  endpoint: "http://192.168.50.71:9090"
+mysql:
+  host: "192.168.50.71"
+  username: "root"
+  password: "SuMk2lH20ocmvyu1p38m40"
