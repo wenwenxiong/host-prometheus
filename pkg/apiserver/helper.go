@@ -160,3 +160,9 @@ func makeQueryOptions(r reqParams) (q queryOptions, err error) {
 
 	return q, nil
 }
+
+func BuildInstanceStr(hostIp string)(host string){
+	var res string
+	res = "\""+hostIp+":9100\""
+	return res
+}

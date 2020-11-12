@@ -30,6 +30,7 @@ func (h handler) ShowVisitorInfo(writer http.ResponseWriter, request *http.Reque
 func (h handler) CpuHandler(writer http.ResponseWriter, request *http.Request){
 	var res monitoring.Metric
 	params := parseRequestParams(request)
+	params.host = BuildInstanceStr(params.host)
 	params.expression = "(100-avg(irate(node_cpu_seconds_total{instance="+params.host+",mode=\"idle\"}[30m]))*100)"
 	opt, err := makeQueryOptions(params)
 	h.DealWithResponse(params, opt, err, res, writer)
@@ -61,7 +62,7 @@ func (h handler) DealWithResponse( params reqParams, opt queryOptions, err error
 
 }
 
-func WriteAsJson(res monitoring.Metric, writer http.ResponseWriter){
+func WriteAsJson(res interface{}, writer http.ResponseWriter){
 
 	js, err := json.Marshal(res)
 	if err != nil {
@@ -79,6 +80,7 @@ func WriteAsJson(res monitoring.Metric, writer http.ResponseWriter){
 func (h handler) Load1Handler(writer http.ResponseWriter, request *http.Request){
 	var res monitoring.Metric
 	params := parseRequestParams(request)
+	params.host = BuildInstanceStr(params.host)
 	params.expression = "node_load1{instance=~"+params.host+"}"
 	opt, err := makeQueryOptions(params)
 	h.DealWithResponse(params, opt, err, res, writer)
@@ -87,6 +89,7 @@ func (h handler) Load1Handler(writer http.ResponseWriter, request *http.Request)
 func (h handler) Load5Handler(writer http.ResponseWriter, request *http.Request){
 	var res monitoring.Metric
 	params := parseRequestParams(request)
+	params.host = BuildInstanceStr(params.host)
 	params.expression = "node_load5{instance=~"+params.host+"}"
 	opt, err := makeQueryOptions(params)
 	h.DealWithResponse(params, opt, err, res, writer)
@@ -95,6 +98,7 @@ func (h handler) Load5Handler(writer http.ResponseWriter, request *http.Request)
 func (h handler) Load15Handler(writer http.ResponseWriter, request *http.Request){
 	var res monitoring.Metric
 	params := parseRequestParams(request)
+	params.host = BuildInstanceStr(params.host)
 	params.expression = "node_load15{instance=~"+params.host+"}"
 	opt, err := makeQueryOptions(params)
 	h.DealWithResponse(params, opt, err, res, writer)
@@ -103,6 +107,7 @@ func (h handler) Load15Handler(writer http.ResponseWriter, request *http.Request
 func (h handler) MemHandler(writer http.ResponseWriter, request *http.Request){
 	var res monitoring.Metric
 	params := parseRequestParams(request)
+	params.host = BuildInstanceStr(params.host)
 	params.expression = "{__name__=~\"node_memory_MemFree_bytes|node_memory_Buffers_bytes|node_memory_Cached_bytes|node_memory_Slab_bytes|node_memory_MemTotal_bytes\",instance="+params.host+"}"
 	opt, err := makeQueryOptions(params)
 	h.DealWithResponse(params, opt, err, res, writer)
@@ -111,6 +116,7 @@ func (h handler) MemHandler(writer http.ResponseWriter, request *http.Request){
 func (h handler) DiskSizeHandler(writer http.ResponseWriter, request *http.Request){
 	var res monitoring.Metric
 	params := parseRequestParams(request)
+	params.host = BuildInstanceStr(params.host)
 	params.expression = "1-(node_filesystem_free_bytes{instance=~"+params.host+",fstype=~\"ext4|xfs\"} / node_filesystem_size_bytes{instance=~"+params.host+",fstype=~\"ext4|xfs\"})"
 	opt, err := makeQueryOptions(params)
 	h.DealWithResponse(params, opt, err, res, writer)
@@ -119,6 +125,7 @@ func (h handler) DiskSizeHandler(writer http.ResponseWriter, request *http.Reque
 func (h handler) DiskInodeHandler(writer http.ResponseWriter, request *http.Request){
 	var res monitoring.Metric
 	params := parseRequestParams(request)
+	params.host = BuildInstanceStr(params.host)
 	params.expression = "1-(node_filesystem_files_free{instance=~"+params.host+",fstype=~\"ext4|xfs\"} / node_filesystem_files{instance=~"+params.host+",fstype=~\"ext4|xfs\"})"
 	opt, err := makeQueryOptions(params)
 	h.DealWithResponse(params, opt, err, res, writer)
@@ -127,6 +134,7 @@ func (h handler) DiskInodeHandler(writer http.ResponseWriter, request *http.Requ
 func (h handler) IopsReadHandler(writer http.ResponseWriter, request *http.Request){
 	var res monitoring.Metric
 	params := parseRequestParams(request)
+	params.host = BuildInstanceStr(params.host)
 	params.expression = "irate(node_disk_reads_completed_total{instance=~"+params.host+"}[30m])"
 	opt, err := makeQueryOptions(params)
 	h.DealWithResponse(params, opt, err, res, writer)
@@ -135,6 +143,7 @@ func (h handler) IopsReadHandler(writer http.ResponseWriter, request *http.Reque
 func (h handler) IopsWriteHandler(writer http.ResponseWriter, request *http.Request){
 	var res monitoring.Metric
 	params := parseRequestParams(request)
+	params.host = BuildInstanceStr(params.host)
 	params.expression = "irate(node_disk_writes_completed_total{instance=~"+params.host+"}[30m])"
 	opt, err := makeQueryOptions(params)
 	h.DealWithResponse(params, opt, err, res, writer)
@@ -143,6 +152,7 @@ func (h handler) IopsWriteHandler(writer http.ResponseWriter, request *http.Requ
 func (h handler) ThrReadHandler(writer http.ResponseWriter, request *http.Request){
 	var res monitoring.Metric
 	params := parseRequestParams(request)
+	params.host = BuildInstanceStr(params.host)
 	params.expression = "irate(node_disk_read_bytes_total{instance=~"+params.host+"}[30m])"
 	opt, err := makeQueryOptions(params)
 	h.DealWithResponse(params, opt, err, res, writer)
@@ -151,6 +161,7 @@ func (h handler) ThrReadHandler(writer http.ResponseWriter, request *http.Reques
 func (h handler) ThrWriteHandler(writer http.ResponseWriter, request *http.Request){
 	var res monitoring.Metric
 	params := parseRequestParams(request)
+	params.host = BuildInstanceStr(params.host)
 	params.expression = "irate(node_disk_written_bytes_total{instance=~"+params.host+"}[30m])"
 	opt, err := makeQueryOptions(params)
 	h.DealWithResponse(params, opt, err, res, writer)
@@ -159,6 +170,7 @@ func (h handler) ThrWriteHandler(writer http.ResponseWriter, request *http.Reque
 func (h handler) NetworkRevHandler(writer http.ResponseWriter, request *http.Request){
 	var res monitoring.Metric
 	params := parseRequestParams(request)
+	params.host = BuildInstanceStr(params.host)
 	params.expression = "irate(node_network_receive_bytes_total{instance=~"+params.host+",device!~'tap.*|veth.*|br.*|docker.*|virbr*|lo*'}[30m])*8"
 	opt, err := makeQueryOptions(params)
 	h.DealWithResponse(params, opt, err, res, writer)
@@ -167,6 +179,7 @@ func (h handler) NetworkRevHandler(writer http.ResponseWriter, request *http.Req
 func (h handler) NetworkTransHandler(writer http.ResponseWriter, request *http.Request){
 	var res monitoring.Metric
 	params := parseRequestParams(request)
+	params.host = BuildInstanceStr(params.host)
 	params.expression = "irate(node_network_transmit_bytes_total{instance=~"+params.host+",device!~'tap.*|veth.*|br.*|docker.*|virbr*|lo*'}[30m])*8"
 	opt, err := makeQueryOptions(params)
 	h.DealWithResponse(params, opt, err, res, writer)

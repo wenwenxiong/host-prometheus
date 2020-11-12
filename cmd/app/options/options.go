@@ -95,7 +95,7 @@ func NewApiServer(listenPort string,endpoint string, sr *ServerRunOptions, stopC
 	s.Cron = cronSchedule
 
 	router := mux.NewRouter()
-	apiserver.RegisterRoutes(router, s.MonitoringClient)
+	apiserver.RegisterRoutes(router, s.MonitoringClient, s.RedisClient)
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", s.ListenPort),
 		// Good practice to set timeouts to avoid Slowloris attacks.

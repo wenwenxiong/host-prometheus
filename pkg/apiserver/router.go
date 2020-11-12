@@ -2,12 +2,14 @@ package apiserver
 
 import (
 	"github.com/gorilla/mux"
+	"github.com/wenwenxiong/host-prometheus/pkg/client/cache"
 	"github.com/wenwenxiong/host-prometheus/pkg/client/monitoring"
 )
 
-func RegisterRoutes(r *mux.Router, cli monitoring.Interface) {
+func RegisterRoutes(r *mux.Router, cli monitoring.Interface, redis cache.Interface) {
 
 	handler := newHandler(cli)
+	cHandler := newCacheHandler(redis)
 	r.HandleFunc("/", handler.ShowVisitorInfo)
 	r.HandleFunc("/host_cpu_usage", handler.CpuHandler)
 	r.HandleFunc("/host_load1", handler.Load1Handler)
@@ -22,4 +24,6 @@ func RegisterRoutes(r *mux.Router, cli monitoring.Interface) {
 	r.HandleFunc("/host_disk_write_throughput", handler.ThrWriteHandler)
 	r.HandleFunc("/host_net_bytes_received", handler.NetworkRevHandler)
 	r.HandleFunc("/host_net_bytes_transmitted", handler.NetworkTransHandler)
+	// cache handler
+	r.HandleFunc("/host_metrics_cache", cHandler.MeticsCacheHandler)
 }
