@@ -13,7 +13,7 @@ const (
 	// DefaultConfigurationName is the default name of configuration
 	defaultConfigurationName = "conf"
 	// DefaultConfigurationPath the default location of the configuration file
-	defaultConfigurationPath = "/home/xww/conf"
+	defaultConfigurationPath = "/etc/host-prometheus"
 )
 
 // Config defines everything needed for apiserver to deal with external services
@@ -35,9 +35,9 @@ func New() *Config {
 // TryLoadFromDisk loads configuration from default location after server startup
 // return nil error if configuration file not exists
 func TryLoadFromDisk() (*Config, error) {
-	viper.SetConfigName("conf")
-	viper.SetConfigFile("/home/xww/conf/conf.yaml")
-	viper.AddConfigPath("/home/xww/conf")
+	viper.SetConfigName(defaultConfigurationName)
+	viper.SetConfigFile("/etc/host-prometheus/conf.yaml")
+	viper.AddConfigPath(defaultConfigurationPath)
 
 	// Load from current working directory, only used for debugging
 	viper.AddConfigPath(".")
