@@ -3,6 +3,7 @@ package apiserver
 import (
 	"github.com/pkg/errors"
 	"github.com/wenwenxiong/host-prometheus/pkg/client/monitoring"
+	"math"
 	"net/http"
 	"strconv"
 	"time"
@@ -97,7 +98,13 @@ func makeQueryOptions(r reqParams) (q queryOptions, err error) {
 
 	// Parse time params
 	if r.start != "" && r.end != "" {
-		startInt, err := strconv.ParseInt(r.start, 10, 64)
+		timeFloat, err := strconv.ParseFloat(r.start, 64 )
+		if err != nil {
+			return q, err
+		}
+		sec, dec := math.Modf(timeFloat);
+		q.start = time.Unix(int64(sec), int64(dec*(1e9)));
+		/*startInt, err := strconv.ParseInt(r.start, 10, 64)
 		if err != nil {
 			return q, err
 		}
@@ -107,7 +114,13 @@ func makeQueryOptions(r reqParams) (q queryOptions, err error) {
 		if err != nil {
 			return q, err
 		}
-		q.end = time.Unix(endInt, 0)
+		q.end = time.Unix(endInt, 0) */
+		timeFloat, err = strconv.ParseFloat(r.end, 64 )
+		if err != nil {
+			return q, err
+		}
+		sec, dec = math.Modf(timeFloat);
+		q.end = time.Unix(int64(sec), int64(dec*(1e9)));
 
 		if r.step == "" {
 			q.step = DefaultStep
